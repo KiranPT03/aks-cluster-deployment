@@ -1,0 +1,22 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",    
+  "parameters": {      
+    "certData": {
+        "reference": {
+            "keyVault": {                
+                "id": "/subscriptions/670e49bd-e963-404f-94f1-6aa5143aa638/resourceGroups/jio-iot-platform/providers/Microsoft.KeyVault/vaults/jio-iot-kv"
+              },
+          "secretName": "jio-iot-appgw-cert-secret"
+      }
+    },
+    "certPassword": {
+        "reference": {
+            "keyVault": {
+              "id": "/subscriptions/670e49bd-e963-404f-94f1-6aa5143aa638/resourceGroups/jio-iot-platform/providers/Microsoft.KeyVault/vaults/jio-iot-kv"
+              },
+          "secretName": "jio-iot-appgw-cert-password"
+      }
+    } 
+  }
+}

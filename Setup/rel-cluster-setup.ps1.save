@@ -1,0 +1,148 @@
+param([Parameter(Mandatory=$true)] [string] $mode,
+        [Parameter(Mandatory=$false)] [string] $resourceGroup = "jio-iot-platform",
+        [Parameter(Mandatory=$false)] [string] $clusterName = "jio-iot-aks-cluster",
+        [Parameter(Mandatory=$false)] [string] $appNameKey = "APPNAME",
+        [Parameter(Mandatory=$false)] [string] $appNameValue = "iotaks",
+        [Parameter(Mandatory=$false)] [string] $ownerKey = "OWNER",
+        [Parameter(Mandatory=$false)] [string] $ownerValue = "kiran.tavadare@ril.com",
+        [Parameter(Mandatory=$false)] [string] $categoryKey = "CATEGORY",
+        [Parameter(Mandatory=$false)] [string] $categoryValue = "JIO",
+        [Parameter(Mandatory=$false)] [string] $envKey = "ENV",
+        [Parameter(Mandatory=$false)] [string] $envValue = "DEV",
+        [Parameter(Mandatory=$false)] [string] $location = "centralindia",
+        [Parameter(Mandatory=$false)] [string] $acrName = "jioiotacr",
+        [Parameter(Mandatory=$false)] [string] $keyVaultName = "jio-iot-kv",
+        [Parameter(Mandatory=$false)] [string] $aksVNetName = "jio-iot-vnet",
+        [Parameter(Mandatory=$false)] [string] $aksSubnetName = "jio-iot-subnet",
+        [Parameter(Mandatory=$false)] [string] $version = "1.15.10",
+        [Parameter(Mandatory=$false)] [string] $addons = "monitoring",
+        [Parameter(Mandatory=$false)] [string] $nodeCount = 4,
+        [Parameter(Mandatory=$false)] [string] $minNodeCount = $nodeCount,
+        [Parameter(Mandatory=$false)] [string] $maxNodeCount = 200,
+        [Parameter(Mandatory=$false)] [string] $maxPods = 50,
+        [Parameter(Mandatory=$false)] [string] $vmSetType = "VirtualMachineScaleSets",
+        [Parameter(Mandatory=$false)] [string] $nodeVMSize = "Standard_DS3_v2",
+        [Parameter(Mandatory=$false)] [string] $networkPlugin = "azure",
+        [Parameter(Mandatory=$false)] [string] $networkPolicy = "azure",
+        [Parameter(Mandatory=$false)] [string] $nodePoolName = "jiopool1",
+        [Parameter(Mandatory=$false)] [string] $aadServerAppID = "cd6c670a-b542-4e9d-a957-9f6e941c790e",
+        [Parameter(Mandatory=$false)] [string] $aadServerAppSecret = "CTpE43w_Uux84qUc~-.BiU5RJNxRQm0XdJ",
+        [Parameter(Mandatory=$false)] [string] $aadClientAppID = "9601340e-735e-4294-84da-44bfe43c85a1",
+        [Parameter(Mandatory=$false)] [string] $aadTenantID = "bbe9b0ad-f1c1-4242-87f9-f22d7621beea")
+
+$projectName = "rel-iot"
+$aksSPIdName = $clusterName + "-sp-id"
+$aksSPSecretName = $clusterName + "-sp-secret"
+$logWorkspaceName = $projectName + "-lw"
+
+$tags = "$appNameKey=$appNameValue $ownerKey='$ownerValue' $categoryKey=$categoryValue $envKey=$envValue"
+Write-Host $tags
+
+$logWorkspace = Get-AzOperationalInsightsWorkspace `
+-ResourceGroupName $resourceGroup `
+-Name $logWorkspaceName
+if (!$logWorkspace)
+{
+
+    Write-Host "Error fetching Log Workspace"
+    return;
+
+}
+
+$keyVault = Get-AzKeyVault -ResourceGroupName $resourceGroup `
+-VaultName $keyVaultName
+if (!$keyVault)
+{
+
+    Write-Host "Error fetching KeyVault"
+    return;
+
+}
+
+$spAppId = Get-AzKeyVaultSecret -VaultName $keyVaultName `
+-Name $aksSPIdName
+if (!$spAppId)
+{
+
+    Write-Host "Error fetching Service Principal Id"
+    return;
+
+}
+
+$spPassword = Get-AzKeyVaultSecret -VaultName $keyVaultName `
+-Name $aksSPSecretName
+if (!$spPassword)
+{
+
+    Write-Host "Error fetching Service Principal Password"
+    return;
+
+}
+
+$aksVnet = Get-AzVirtualNetwork -Name $aksVNetName `
+-ResourceGroupName $resourceGroup
+if (!$aksVnet)
+{
+
+    Write-Host "Error fetching Vnet"
+    return;
+
+}
+
+$aksSubnet = Get-AzVirtualNetworkSubnetConfig -Name $aksSubnetName `
+-VirtualNetwork $aksVnet
+if (!$aksSubnet)
+{
+
+    Write-Host "Error fetching Subnet"
+    return;
+
+}
+
+if ($mode -eq "create")
+{
+
+    az aks create --name $clusterName --resource-group $resourceGroup `
+    --kubernetes-version $version --enable-addons $addons --location $location `
+    --vnet-subnet-id $aksSubnet.Id --node-vm-size $nodeVMSize `
+    --node-count $nodeCount --max-pods $maxPods `
+    --service-principal $spAppId.SecretValueText `
+#    --client-secret $spPassword.SecretValueText `
+#    --network-plugin $networkPlugin --network-policy $networkPolicy `
+#    --nodepool-name $nodePoolName --vm-set-type $vmSetType `
+#    --generate-ssh-keys `
+#    --aad-client-app-id $aadClientAppID `
+#    --aad-server-app-id $aadServerAppID `
+#    --aad-server-app-secret $aadServerAppSecret `
+#    --aad-tenant-id $aadTenantID `
+#    --tags $tags `
+#    --workspace-resource-id $logWorkspace.ResourceId
+    
+}
+elseif ($mode -eq "update")
+{
+
+    az aks nodepool update --cluster-name $clusterName `
+    --resource-group $resourceGroup --enable-cluster-autoscaler `
+    --min-count $minNodeCount --max-count $maxNodeCount `
+    --name $nodePoolName
+
+    # az aks update-credentials --name $clusterName --resource-group $resourceGroup `
+    # --reset-aad `
+    # --aad-client-app-id $aadClientAppID `
+    # --aad-server-app-id $aadServerAppID `
+    # --aad-server-app-secret $aadServerAppSecret `
+    # --aad-tenant-id $aadTenantID
+
+    
+}
+# elseif ($mode -eq "scale")
+# {
+
+#     az aks nodepool scale --cluster-name $clusterName --resource-group $resourceGroup `
+#     --node-count $nodeCount --name $nodePoolName
+    
+# }
+
+Write-Host "Cluster Successfully Done!"
+

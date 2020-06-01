@@ -1,0 +1,25 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: reliance-developer-roles
+  namespace: rel-iot-dev
+rules:
+- apiGroups: ["", "apps"]
+  resources: ["configmaps", "pods", "deployments"]
+  verbs: ["get", "list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: reliance-developer-role-bindings
+  namespace: rel-iot-dev
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: reliance-developer-roles
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  name: <>
+  kind: User
+  namespace: rel-iot-dev

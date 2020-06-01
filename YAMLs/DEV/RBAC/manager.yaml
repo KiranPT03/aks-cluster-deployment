@@ -1,0 +1,36 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: reliance-manager-roles
+  namespace: rel-iot-dev
+rules:
+- apiGroups: ["", "apiextensions.k8s.io", "apps", "autoscaling", "batch", "events.k8s.io", "networking.k8s.io", "policy", "rbac.authorization.k8s.io", "scheduling.k8s.io"]
+  resources: ["secrets", "configmaps", "endpoints", "events", "limitranges", "persistentvolumeclaims", "pods", "pods/log", "pods/exec", "resourcequotas", "serviceaccounts", "namespaces", "services", "customresourcedefinitions", "daemonsets", "deployments", "replicasets", "statefulsets", "horizontalpodautoscalers", "cronjobs", "jobs", "events", "ingresses", "networkpolicies", "poddisruptionbudgets", "rolebindings", "roles", "clusterrolebindings", "clusterroles", "priorityclasses"]
+  verbs: ["create", "delete", "deletecollection", "get", "list", "patch", "update", "watch"]
+- apiGroups: ["metrics.k8s.io"]
+  resources: ["nodes", "pods"]
+  verbs: ["get", "list"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: reliance-manager-role-bindings
+  namespace: rel-iot-dev
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: reliance-manager-roles
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  name: <>
+  kind: User
+  namespace: rel-iot-dev
+- apiGroup: rbac.authorization.k8s.io
+  name: <>
+  kind: User
+  namespace: rel-iot-dev
+- apiGroup: rbac.authorization.k8s.io
+  name: <>
+  kind: User
+  namespace: rel-iot-dev

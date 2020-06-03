@@ -15,4 +15,8 @@ spec:
       - backend:
           serviceName: nginx-service
           servicePort: 80
-        path: /health/?(.*)      
+        path: /health/?(.*)
+      - backend:
+          serviceName: scef-event-listener-service
+          servicePort: 7000
+        path: /mo/?(.*)      

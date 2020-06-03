@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:  
+  name: scef-event-listener-service
+  namespace: rel-iot-dev
+spec:
+  type: ClusterIP  
+  ports:
+  - port: 7000    
+    targetPort: 7000
+  selector:
+    app: scef-event-listener-pod

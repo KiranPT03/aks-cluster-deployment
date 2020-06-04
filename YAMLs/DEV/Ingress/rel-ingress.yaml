@@ -18,5 +18,5 @@ spec:
         path: /health/?(.*)
       - backend:
           serviceName: scef-event-listener-service
-          servicePort: 7000
-        path: /mo/?(.*)      
+          servicePort: 80
+        path: /mo/?(.*)     

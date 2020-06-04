@@ -6,7 +6,7 @@ metadata:
 spec:
   type: ClusterIP  
   ports:
-  - port: 7000    
+  - port: 80    
     targetPort: 7000
   selector:
     app: scef-event-listener-pod
